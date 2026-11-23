@@ -34,7 +34,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (mounted && _scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
@@ -44,34 +44,39 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
-  void _sendMessage([String? quickText]) {
+  Future<void> _sendMessage([String? quickText]) async {
     final aiProv = context.read<AiTutorProvider>();
-
-    if (aiProv.isGenerating) return;
+    if (aiProv.isGenerating || context.read<ProfileProvider>().isUpdatingAiMode) {
+      return;
+    }
 
     final text = quickText ?? _textController.text;
 
     if (text.trim().isEmpty) return;
 
-    _textController.clear();
-    aiProv.sendMessage(text);
+    if (quickText == null) _textController.clear();
 
+    final response = aiProv.sendMessage(text);
     _scrollToBottom();
+    await response;
+    if (mounted) _scrollToBottom();
   }
 
-  void _toggleAiMode() {
+  Future<void> _toggleAiMode() async {
     final prof = context.read<ProfileProvider>();
     final newDemoMode = !prof.isDemoMode;
-    prof.setDemoMode(newDemoMode);
+    final saved = await prof.setDemoMode(newDemoMode);
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          !newDemoMode
-              ? '🌐 Trực tuyến: AI suy ngẫm sâu, giải đáp đa lĩnh vực & môn học.'
-              : '📴 Ngoại tuyến: AI cục bộ, giới hạn giải đáp trong phạm vi Môn học.',
+          switch ((saved, newDemoMode)) {
+            (false, _) => 'Không thể lưu chế độ AI Tutor. Hãy thử lại.',
+            (true, true) => '📴 Ngoại tuyến: Giải đáp môn học trên thiết bị.',
+            (true, false) => '🌐 Trực tuyến: Kết nối Gemini qua máy chủ Edumaster.',
+          },
         ),
-        backgroundColor: !newDemoMode ? AppColors.success : const Color(0xFFFF9800),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -82,6 +87,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
     final aiProv = context.watch<AiTutorProvider>();
     final prof = context.watch<ProfileProvider>();
     final isOnline = !prof.isDemoMode;
+    final isBusy = aiProv.isGenerating || prof.isUpdatingAiMode;
+    final messages = aiProv.messages;
 
     return Scaffold(
       appBar: AppBar(
@@ -140,7 +147,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               color: isOnline ? AppColors.success : AppColors.primary,
             ),
             tooltip: isOnline ? 'Đang ở chế độ Online (Bấm để đổi)' : 'Đang ở chế độ Offline (Bấm để đổi)',
-            onPressed: _toggleAiMode,
+            onPressed: isBusy ? null : _toggleAiMode,
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -192,10 +199,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              itemCount: aiProv.messages.length,
+              itemCount: messages.length,
               itemBuilder: (context, index) {
-                final msg = aiProv.messages[index];
-                return _buildMessageBubble(msg);
+                return _buildMessageBubble(messages[index]);
               },
             ),
           ),
@@ -260,7 +266,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         children: [
                           Expanded(
                             child: TextField(
-                              enabled: !aiProv.isGenerating,
+                              enabled: !isBusy,
                               controller: _textController,
                               maxLines: 4,
                               minLines: 1,
@@ -280,11 +286,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   ),
                   const SizedBox(width: 8),
                   InkWell(
-                    onTap: aiProv.isGenerating ? null : () => _sendMessage(),
+                    onTap: isBusy ? null : () => _sendMessage(),
                     borderRadius: BorderRadius.circular(24),
                     child: CircleAvatar(
                       radius: 22,
-                      backgroundColor: aiProv.isGenerating ? Colors.grey : AppColors.primary,
+                      backgroundColor: isBusy ? Colors.grey : AppColors.primary,
                       child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                     ),
                   ),
@@ -305,7 +311,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
         side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         label: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
-        onPressed: context.read<AiTutorProvider>().isGenerating
+        onPressed: context.read<AiTutorProvider>().isGenerating ||
+                context.read<ProfileProvider>().isUpdatingAiMode
             ? null
             : () => _sendMessage(
           label.replaceAll(RegExp(r'^[^\w\s]+\s*'), ''),

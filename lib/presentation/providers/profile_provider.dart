@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -22,11 +21,11 @@ class ProfileProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
 
-  String _apiKey = '';
-  String get apiKey => _apiKey;
-
   bool _isDemoMode = false;
   bool get isDemoMode => _isDemoMode;
+
+  bool _isUpdatingAiMode = true;
+  bool get isUpdatingAiMode => _isUpdatingAiMode;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -38,6 +37,7 @@ class ProfileProvider extends ChangeNotifier {
   })  : _repo = repo,
         _aiDataSource = aiDataSource {
     loadProfile();
+    _loadAiMode();
   }
 
   Future<void> loadProfile({String? email}) async {
@@ -46,8 +46,6 @@ class ProfileProvider extends ChangeNotifier {
 
     try {
       _profile = await _repo.getUserProfile(email: email);
-      _apiKey = await _aiDataSource.getApiKey();
-      _isDemoMode = await _aiDataSource.isDemoMode();
     } catch (e) {
       debugPrint('Load profile error: $e');
     }
@@ -136,24 +134,31 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Save API key (temporary compatibility with old settings UI)
-  Future<void> saveApiKey(String key) async {
-    _apiKey = key.trim();
-    await _aiDataSource.saveApiKey(_apiKey);
-    notifyListeners();
+  Future<void> _loadAiMode() async {
+    try {
+      _isDemoMode = await _aiDataSource.isDemoMode();
+    } catch (error) {
+      debugPrint('Không thể đọc chế độ AI Tutor: $error');
+    } finally {
+      _isUpdatingAiMode = false;
+      notifyListeners();
+    }
   }
 
-  // Reset API key (temporary compatibility with old settings UI)
-  Future<void> resetApiKeyToDefault() async {
-    await _aiDataSource.clearSavedApiKey();
-    _apiKey = await _aiDataSource.getApiKey();
+  Future<bool> setDemoMode(bool value) async {
+    if (_isUpdatingAiMode) return false;
+    _isUpdatingAiMode = true;
     notifyListeners();
-  }
-
-  // Toggle demo mode
-  Future<void> setDemoMode(bool value) async {
-    _isDemoMode = value;
-    await _aiDataSource.setDemoMode(value);
-    notifyListeners();
+    try {
+      await _aiDataSource.setDemoMode(value);
+      _isDemoMode = value;
+      return true;
+    } catch (error) {
+      debugPrint('Không thể lưu chế độ AI Tutor: $error');
+      return false;
+    } finally {
+      _isUpdatingAiMode = false;
+      notifyListeners();
+    }
   }
 }

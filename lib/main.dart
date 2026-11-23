@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'firebase_options.dart';
 
 // Core
 import 'core/theme/app_theme.dart';
@@ -80,25 +77,6 @@ Future<void> _clearAllDataOnFirstRun() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 1. Khởi tạo Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  debugPrint('Firebase initialized successfully');
-
-  // 2. Khởi tạo Firebase App Check
-  // Dành cho Android Emulator trong quá trình phát triển
-  try {
-    await FirebaseAppCheck.instance.activate(
-      providerAndroid: const AndroidDebugProvider(),
-    );
-
-    debugPrint('Firebase App Check initialized');
-  } catch (e) {
-    debugPrint('Firebase App Check initialization error: $e');
-  }
 
   // 3. Khởi tạo SQLite
   try {

@@ -233,11 +233,19 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                                     icon: const Icon(Icons.smart_toy_rounded, size: 16),
                                     label: const Text('Hỏi AI Tutor', style: TextStyle(fontSize: 12)),
                                     onPressed: () {
+                                      final prompt = prov.isEnglish
+                                          ? 'Question: ${q.questionEn}\n'
+                                          'Correct answer: ${q.optionsEn[q.correctIndex]}\n'
+                                          'Reference: ${q.explanationEn}\n'
+                                          'Please explain the correct answer in English.'
+                                          : 'Câu hỏi: ${q.questionVi}\n'
+                                          'Đáp án đúng: ${q.optionsVi[q.correctIndex]}\n'
+                                          'Tham khảo: ${q.explanationVi}\n'
+                                          'Hãy giải thích đáp án đúng bằng tiếng Việt.';
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (_) => AiChatScreen(
-                                            initialPrompt:
-                                                'Hãy giải thích chi tiết câu hỏi này giúp tôi:\n"${q.questionVi}"\nĐáp án đúng là: "${q.optionsVi[q.correctIndex]}". Tại sao lại như vậy?',
+                                            initialPrompt: prompt,
                                           ),
                                         ),
                                       );

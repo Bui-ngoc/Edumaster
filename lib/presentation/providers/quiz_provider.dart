@@ -81,6 +81,7 @@ class QuizProvider extends ChangeNotifier {
     _score = 0;
     _currentIndex = 0;
     _errorMessage = '';
+    _aiExplanation = '';
     notifyListeners();
   }
 
@@ -248,6 +249,7 @@ class QuizProvider extends ChangeNotifier {
 
   void toggleLanguage() {
     _isEnglish = !_isEnglish;
+    _aiExplanation = '';
     notifyListeners();
   }
 
@@ -310,27 +312,40 @@ class QuizProvider extends ChangeNotifier {
   }
 
   Future<void> requestAiExplanation() async {
-    final chosen = _userAnswers[_currentIndex];
-    if (chosen == null) return;
+    final index = _currentIndex;
+    final chosen = _userAnswers[index];
+    if (_isExplaining || chosen == null || index >= _activeQuestions.length) {
+      return;
+    }
+    final question = _activeQuestions[index];
+    final isEnglish = _isEnglish;
 
     _isExplaining = true;
     _aiExplanation = '';
     notifyListeners();
 
+    String explanation;
     try {
-      final res = await _aiRepo.explainWrongAnswer(
-        question: _activeQuestions[_currentIndex],
+      explanation = await _aiRepo.explainWrongAnswer(
+        question: question,
         selectedIndex: chosen,
-        isEnglish: _isEnglish,
+        isEnglish: isEnglish,
       );
-      _aiExplanation = res;
-    } catch (e) {
-      _aiExplanation =
-          '💡 Lời giải tham khảo: ${_activeQuestions[_currentIndex].explanationVi}';
-    } finally {
-      _isExplaining = false;
-      notifyListeners();
+    } catch (_) {
+      explanation = isEnglish
+          ? '💡 Reference explanation: ${question.explanationEn}'
+          : '💡 Lời giải tham khảo: ${question.explanationVi}';
     }
+
+    if (_currentIndex == index &&
+        index < _activeQuestions.length &&
+        identical(_activeQuestions[index], question) &&
+        _userAnswers[index] == chosen &&
+        _isEnglish == isEnglish) {
+      _aiExplanation = explanation;
+    }
+    _isExplaining = false;
+    notifyListeners();
   }
 
   @override

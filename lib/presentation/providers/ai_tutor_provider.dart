@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import '../../domain/repositories/interfaces.dart';
@@ -125,11 +126,14 @@ Hãy trả lời trực tiếp câu hỏi mới nhất.
           isUser: false,
         ),
       );
-    } catch (e) {
+    } catch (error) {
+      debugPrint('AI Tutor không thể trả lời: ${error.runtimeType}');
+      final message = error is TimeoutException
+          ? 'Gemini phản hồi quá lâu.'
+          : 'AI Tutor chưa trả lời được.';
       _messages.add(
         ChatMessage(
-          text: '⚠️ Không thể kết nối với AI ngay lúc này.\n\n'
-              '${e.toString().replaceFirst('Exception: ', '')}',
+          text: '⚠️ $message Hãy thử lại hoặc chuyển sang chế độ ngoại tuyến.',
           isUser: false,
         ),
       );

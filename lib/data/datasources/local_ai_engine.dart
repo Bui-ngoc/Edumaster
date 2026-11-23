@@ -61,7 +61,7 @@ class LocalAiEngine {
           '- 🏛️ **Kiến trúc phần mềm:** Clean Architecture, Repository Pattern, Dependency Inversion.\n'
           '- 📝 **Ôn luyện thi cử:** Giải thích đáp án trắc nghiệm, công thức tính điểm thi thang 10.\n\n'
           '💡 **Để hỏi đáp mở rộng về mọi chủ đề đời sống, xã hội và các lĩnh vực kiến thức khác:**\n'
-          'Bạn vui lòng bấm vào biểu tượng **Đám mây (☁️)** ở góc phải màn hình để chuyển sang **Chế độ Trực tuyến (Online)** có kết nối với Mô hình AI bên ngoài qua Khóa nhé!';
+          'Bấm biểu tượng **Đám mây (☁️)** để chuyển sang **Chế độ Trực tuyến (Online)** và hỏi Gemini.';
     }
 
     // 2. Phép toán số học hoặc công thức tính điểm thi
@@ -141,6 +141,21 @@ class LocalAiEngine {
   static String? _tryEvaluateMath(String raw, String lower) {
     // Nhận diện câu hỏi điểm thi hoặc công thức BTL
     if (lower.contains('tính điểm') || lower.contains('thang điểm') || lower.contains('điểm thi')) {
+      final counts = RegExp(r'(-?\d+)\s*(?:/|trên)\s*(-?\d+)').firstMatch(lower);
+      if (counts != null) {
+        final correct = int.tryParse(counts.group(1)!);
+        final total = int.tryParse(counts.group(2)!);
+        if (correct == null || total == null || total <= 0 ||
+            correct < 0 || correct > total) {
+          return 'Số câu đúng phải nằm trong khoảng từ 0 đến tổng số câu. '
+              'Tổng số câu phải lớn hơn 0.';
+        }
+        final score = (correct / total * 10)
+            .toStringAsFixed(2)
+            .replaceFirst(RegExp(r'0$'), '');
+        return '📊 **Kết quả tính điểm thi:**\n\n'
+            'Đúng $correct/$total câu: ($correct / $total) × 10 = **$score điểm**.';
+      }
       return '📊 **Công thức tính điểm thi trắc nghiệm (Thang điểm 10):**\n\n'
           r'$$\text{Điểm} = \left(\frac{\text{Số câu đúng}}{\text{Tổng số câu}}\right) \times 10$$'
           '\n\n'
@@ -193,10 +208,9 @@ class LocalAiEngine {
         }
 
         final resStr = (result % 1 == 0) ? result.toInt().toString() : result.toStringAsFixed(2);
+        final expression = '${match.group(1)} $op ${match.group(3)}';
         return '🔢 **Kết quả tính toán ($opName):**\n\n'
-            '**$num1 $op $num2 = $resStr**\n\n'
-            '- Biểu thức thực hiện: **$num1 $op $num2**\n'
-            '- Kết quả chính xác: **$resStr**';
+            '**$expression = $resStr**';
       }
     }
     return null;
@@ -345,16 +359,19 @@ class LocalAiEngine {
     }
 
     final qDisplay = questionPart.isNotEmpty ? questionPart : 'Câu hỏi trắc nghiệm';
-    final sDisplay = studentPart.isNotEmpty ? studentPart : 'Chưa chính xác';
     final cDisplay = correctPart.isNotEmpty ? correctPart : 'Đáp án chính xác';
     final rDisplay = refPart.isNotEmpty
         ? refPart
         : 'Cần phân tích bản chất định nghĩa và ngữ cảnh kỹ thuật trong bài học.';
+    final selectedExplanation = studentPart.isEmpty
+        ? ''
+        : '• **Phân tích phương án:** Bạn chọn *$studentPart* là chưa chính xác '
+            'vì chưa thỏa mãn đầy đủ điều kiện hoặc định nghĩa của câu hỏi.\n\n';
 
     return '💡 **Giải thích chi tiết từ EduMaster AI Tutor:**\n\n'
         '• **Nội dung:** $qDisplay\n\n'
         '• **Đáp án chính xác:** **$cDisplay**\n\n'
-        '• **Phân tích phương án:** Bạn chọn *$sDisplay* là chưa chính xác vì chưa thỏa mãn đầy đủ điều kiện hoặc định nghĩa của câu hỏi.\n\n'
+        '$selectedExplanation'
         '• **Bản chất kiến thức:** $rDisplay\n\n'
         '✨ **Lời khuyên ôn tập:** Hãy chú ý các từ khóa then chốt để phân biệt chính xác giữa các phương án trong kỳ thi nhé!';
   }
