@@ -165,22 +165,23 @@ class LeaderboardProvider extends ChangeNotifier {
     }
 
     final authDataSource = AuthLocalDataSource();
-    var user = await authDataSource.getUserById(cleanId);
+    final user = await authDataSource.getUserById(cleanId);
 
-    if (user != null && user.isTeacher) {
+    if (user == null) {
+      return (
+        success: false,
+        message: 'Không tìm thấy tài khoản sinh viên với Mã ID hoặc Email "$cleanId" đã đăng ký trong hệ thống.',
+        studentName: ''
+      );
+    }
+
+    if (user.isTeacher) {
       return (
         success: false,
         message: 'Mã ID "$cleanId" là tài khoản Giảng viên, không thể thêm vào nhóm của Sinh viên.',
         studentName: ''
       );
     }
-
-    // Nếu sinh viên chưa có trong Auth, tự động ghi danh mới vào hệ thống!
-    user ??= await authDataSource.registerOrEnrollStudent(
-      id: cleanId,
-      name: 'Sinh viên ($cleanId)',
-      group: cleanGroup,
-    );
 
     // 1. Cập nhật nhóm học trong auth local datasource
     await authDataSource.updateUserGroup(user.id, cleanGroup);

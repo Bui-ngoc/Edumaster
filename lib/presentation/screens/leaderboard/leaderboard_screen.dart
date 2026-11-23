@@ -246,7 +246,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ],
                 const SizedBox(height: 8),
                 const Text(
-                  '💡 Sinh viên có thể sao chép Mã ID của mình tại mục Hồ sơ cá nhân. Giáo viên cũng có thể nhập Email hoặc Họ tên sinh viên để phân nhóm.',
+                  '💡 Lưu ý: Chỉ chấp nhận mã ID hoặc Email của tài khoản sinh viên đã đăng ký trong hệ thống.',
                   style: TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
                 ),
               ],
