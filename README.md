@@ -1,133 +1,105 @@
-# 🎓 EduMaster - Siêu Ứng Dụng Giáo Dục & Ôn Tập Song Ngữ Tích Hợp AI Tutor, Chống Gian Lận & Camera
+# EduMaster
 
-> **Báo cáo Dự án Bài tập lớn / Kết thúc học phần (BTL_KTHP)**  
-> **Trường:** HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG (PTIT)  
-> **Học phần:** Phát triển ứng dụng cho các thiết bị di động (INT1449) — **Lớp:** INT1449-20261-02  
-> **Nhóm thực hiện:** Nhóm F (Chủ đề: 32, 34, 35, 36 kết hợp 33)  
-> - Bùi Phương Ngọc — B24DCCC215  
-> - Nguyễn Minh Phương — B24DCCC231  
-> - Nguyễn Thị Yến Vi — B24DCCC286  
-> **Công nghệ:** Flutter (Dart 3.x), Android SDK, SQLite FTS, SharedPreferences, Google Gemini AI, Camera Mobile Scanner  
+EduMaster là ứng dụng Android của Nhóm F, học phần Phát triển ứng dụng cho các thiết bị di động (INT1449), Học viện Công nghệ Bưu chính Viễn thông. Dự án hỗ trợ sinh viên ôn tập trắc nghiệm song ngữ, tra cứu thuật ngữ CNTT và hỏi AI Tutor. Giáo viên có thể tạo đề, quản lý phòng thi, xem kết quả và phân nhóm sinh viên theo ID đã đăng ký.
 
----
+**Thành viên:** Bùi Phương Ngọc — B24DCCC215, Nguyễn Minh Phương — B24DCCC231, Nguyễn Thị Yến Vi — B24DCCC286.
 
-## 🚀 ĐIỂM NỔI BẬT & ĐỘT PHÁ CÔNG NGHỆ
+## 1. Chuẩn bị môi trường
 
-1. **Hệ thống Phân quyền 2 Chế độ Độc lập (Giáo viên ↔ Sinh viên)**:
-   - Đăng ký hỏi vai trò **Giáo viên (GV)** hay **Sinh viên (SV)**.
-   - Cung cấp nút **Chuyển đổi vai trò tức thì** ngay tại Hồ sơ cá nhân (`ProfileScreen`) để trải nghiệm mượt mà cả 2 luồng.
-2. **Luồng Giảng viên Chuyên nghiệp (Tạo đề, Giám sát Realtime & Biểu đồ Chart)**:
-   - **Tạo phòng thi & Sinh mã QR**: Đặt mã PIN, thời gian thi, tích hợp 3 nguồn đề (*Bộ đề chuẩn, Lọc ngân hàng 300 câu, Tự soạn câu hỏi*).
-   - **Giám sát trực tiếp trong từng phòng (`Realtime Live Monitor`)**: Theo dõi sinh viên đang làm đến câu bao nhiêu, số câu đúng hiện tại, tự động ghi nhận số lần và mốc thời gian thoát/chuyển ứng dụng chống gian lận.
-   - **Biểu đồ Cột Thống kê Điểm số (`Score Distribution Histogram Chart`)**: Trực quan hóa phân bố điểm số thang 10 (Kém <5.0, TB 5.0-6.9, Khá 7.0-8.4, Giỏi 8.5-10.0), tỉ lệ Đạt/Trượt.
-   - **Lịch sử phòng thi đã tạo (`Teacher Exam History`)**: Quản lý lịch sử toàn bộ các phòng thi đã khởi tạo, bắt đầu hoàn toàn sạch (0 dữ liệu rác/mẫu).
-3. **Luồng Sinh viên Học tập Toàn diện**:
-   - **Ôn tập trắc nghiệm song ngữ 300 câu**: Chế độ Luyện tập, Thi thử đếm ngược, Làm lại câu sai, Lọc theo khối chủ đề.
-   - **Flashcard Lật thẻ 3D (SuperMemo SM-2)**: Xếp lịch ôn tập ngắt quãng khoa học, nhập CSV hàng loạt, phát âm chuẩn bản ngữ TTS.
-   - **Gia sư ảo AI Tutor 24/7**: Giải đáp thắc mắc, giải thích đáp án sai, tích hợp kiến trúc 4 tầng an toàn (*Demo Mode, Key Proxy Server, Direct Key, Offline Fallback*).
-   - **Phòng thi trực tuyến**: Nhập PIN hoặc **Quét mã QR bằng Camera**, hệ thống cảnh báo chống gian lận khi thoát app.
-   - **Từ điển IT Offline SQLite FTS $O(\log N)$**: Tra cứu thuật ngữ công nghệ tức thì, Từ của ngày (Word of the Day), đánh dấu Bookmark.
-   - **Bảng xếp hạng thi đua Realtime**: Tích lũy XP, chuỗi ngày học Streak, danh hiệu Huy hiệu thành tích (Badges).
+| Công cụ | Yêu cầu |
+| --- | --- |
+| Git | Dùng để clone và cập nhật mã nguồn. |
+| Flutter và Dart | Đã kiểm tra với **Flutter 3.47.9 / Dart 3.13.7**. `pubspec.yaml` yêu cầu Dart `^3.13.4`. Dart đi kèm Flutter. |
+| Android Studio | Cài Android SDK Platform **36**, Android SDK Build-Tools, Platform-Tools và Command-line Tools. Nếu Gradle yêu cầu NDK, cài **NDK (Side by side) 28.2.13676358**. |
+| Thiết bị Android | Dùng emulator hoặc điện thoại thật. Với Flutter 3.47.9, cấu hình dự án có min SDK 24. |
 
----
+Tải và giải nén Flutter, thêm `flutter/bin` vào `PATH`, rồi mở terminal mới. Trong Android Studio, vào **Tools → SDK Manager** để cài các gói Android. [Cài Flutter](https://docs.flutter.dev/install) · [Thiết lập Android](https://docs.flutter.dev/platform-integration/android/setup)
 
-## 📱 DANH SÁCH PHÂN HỆ VÀ TÍNH NĂNG CHI TIẾT
+```powershell
+git --version
+flutter --version
+flutter doctor -v
+flutter doctor --android-licenses
+```
 
-### 👨‍🏫 1. Luồng Giảng viên (Teacher Flow)
-- **Tạo phòng thi & Soạn đề**:
-  - Nhập tên kỳ thi, mã PIN (sinh tự động hoặc tự đặt), cài đặt thời gian thi (phút).
-  - Chọn 1 trong 3 nguồn đề thi:
-    1. *Bộ đề chuẩn bị sẵn*: Đề 1 (Dart & OOP), Đề 2 (Flutter Core & Layout), Đề 3 (Chuẩn KTHP 50 câu / 60 phút), Đề 4 (State Management & SQLite).
-    2. *Lọc ngân hàng câu hỏi*: Chọn khối chủ đề (Khối 1 - Khối 20), mức độ (Dễ, Trung bình, Khó) và số câu.
-    3. *Tự soạn câu hỏi mới*: Công cụ soạn câu hỏi trắc nghiệm song ngữ tùy chỉnh.
-  - Sinh mã QR phòng thi để sinh viên quét mã vào thẳng phòng.
-- **Chi tiết & Giám sát phòng thi (`TeacherRoomDetailScreen`)**:
-  - **Giám sát trực tiếp (Realtime Live Monitor)**: Cập nhật mỗi 3 giây cho các sinh viên đang tham gia phòng thi (*Sinh viên đang làm câu mấy, đã khoanh bao nhiêu câu, số câu đúng hiện tại, số lần thoát app kèm mốc thời gian chi tiết*).
-  - **Biểu đồ Thống kê Điểm số (Statistics Chart)**: Biểu đồ cột phân bố điểm số thang 10, biểu đồ tỉ lệ Đạt/Trượt, danh sách bài nộp.
-  - **Mã QR & Bộ đề**: Mở lại mã QR và xem chi tiết cấu trúc câu hỏi.
-- **Lịch sử phòng thi đã tạo (`TeacherExamHistoryScreen`)**:
-  - Lưu trữ và quản lý toàn bộ danh sách phòng thi đã tạo, cho phép mở lại báo cáo thống kê bất kỳ lúc nào.
+## 2. Clone và cấu hình
 
-### 🎓 2. Luồng Sinh viên (Student Flow)
-- **Phân hệ #32: Ôn tập trắc nghiệm song ngữ (300 câu)**:
-  - Nạp 300 câu hỏi từ `assets/data/questions_300.json`.
-  - Chế độ Luyện tập tự do & Thi thử tính giờ.
-  - Nút chuyển đổi giao diện **Song ngữ Anh - Việt** tức thì.
-  - Tự động ghi nhận câu sai và tính năng *"Làm lại câu sai"*.
-  - AI Tutor giải thích lý do vì sao chọn sai.
-- **Phân hệ #33: Thẻ ghi nhớ SM-2 (Flashcards)**:
-  - Quản lý bộ thẻ, thuật toán **SuperMemo SM-2** tính khoảng cách ôn tập ($EF \ge 1.3$).
-  - Nhập thẻ hàng loạt từ tệp **CSV**.
-  - Hoạt ảnh **lật thẻ 3D** mượt mà & phát âm giọng đọc **TTS**.
-- **Phân hệ #34: Phòng thi trực tuyến**:
-  - Nhập mã PIN hoặc **Quét mã QR bằng Camera phần cứng** để vào thi.
-  - Tự động xáo trộn thứ tự câu hỏi và đáp án cho từng thí sinh.
-  - Lắng nghe vòng đời ứng dụng, ghi nhận số lần thoát app gửi lên biên bản thi.
-  - Tự động chấm điểm, tính điểm thang 10, thưởng XP và lưu lịch sử thi cá nhân.
-- **Phân hệ #35: Từ điển IT Offline (SQLite FTS)**:
-  - Tra cứu siêu tốc $O(\log N)$, từ của ngày (Word of the Day), lưu từ yêu thích.
-- **Phân hệ #36: Bảng xếp hạng thi đua**:
-  - Cập nhật thời gian thực điểm XP, Streak Days và Huy hiệu thành tích (Badges).
+Mở PowerShell trong thư mục bạn muốn chứa dự án:
 
----
-
-## 🔒 CHÍNH SÁCH BẢO MẬT & LƯU TRỮ DỮ LIỆU
-
-| Loại dữ liệu | Vị trí lưu trữ | Cơ chế bảo mật |
-| :--- | :--- | :--- |
-| **Tài khoản & Phân quyền** | `SharedPreferences` (mã hóa JSON) | Quản lý phiên làm việc cục bộ an toàn, tự động nhận diện vai trò GV/SV. |
-| **Ngân hàng 300 câu hỏi** | `assets/data/questions_300.json` | Đọc dạng asset bundle trong sandbox ứng dụng. |
-| **Từ điển IT (SQLite FTS)** | `edumaster_it_dictionary.db` | CSDL SQLite mã hóa trong vùng nhớ riêng ứng dụng. |
-| **Dữ liệu SM-2 & Lịch sử phòng thi** | `SharedPreferences` | Lưu trữ trong bộ nhớ nội bộ `/data/data/...`. |
-| **Ảnh đại diện Avatar** | Bộ nhớ cục bộ thiết bị (`localAvatarPath`) | Chỉ truy cập khi người dùng chụp ảnh/chọn ảnh qua Camera/ImagePicker. |
-| **Khóa AI & Proxy URL** | `SharedPreferences` | Không bao giờ hardcode trong code. Hỗ trợ Key Proxy Server và Demo Mode. |
-
----
-
-## ⚡ HƯỚNG DẪN CÀI ĐẶT & CHẠY ỨNG DỤNG
-
-### Yêu cầu hệ thống:
-- **Flutter SDK**: >= 3.13.4
-- **Dart SDK**: >= 3.0.0
-- **Môi trường**: Android Studio / Visual Studio Code / Android Emulator hoặc Thiết bị thật (Android 8.0+).
-
-### Các bước thực hiện:
-```bash
-# 1. Chuyển vào thư mục dự án
-cd D:\Mobile_App\BTL_KTHP
-
-# 2. Tải các gói thư viện
+```powershell
+git clone https://github.com/Bui-ngoc/Edumaster.git
+cd Edumaster
+git branch --show-current
+git log -1 --oneline
 flutter pub get
+```
 
-# 3. Kiểm tra tĩnh mã nguồn (Đảm bảo 0 lỗi, 0 cảnh báo - No issues found!)
-flutter analyze
+Đối chiếu nhánh và commit với người gửi source. Nếu nhóm dùng nhánh khác, chuyển sang đúng nhánh trước khi chạy `flutter pub get`. Các lệnh Flutter bên dưới chạy tại thư mục có `pubspec.yaml`.
 
-# 4. Chạy toàn bộ 34 bài kiểm thử tự động (Unit + Widget + Accessibility Tests)
-flutter test
+### Cấu hình AI Tutor
 
-# 5. Khởi chạy ứng dụng
+- **Trực tuyến:** Flutter gọi `https://edumaster-ai-tutor.edumaster-buingoc.workers.dev/chat`. Bản Flutter kết nối Worker có URL mặc định trong `lib/data/datasources/gemini_ai_datasource.dart`.
+- **Ngoại tuyến:** Chọn **Ngoại tuyến** trong AI Tutor để dùng kiến thức và phép tính được hỗ trợ trên thiết bị.
+- **Cấu hình dùng chung:** Thành viên chỉ cần địa chỉ HTTPS của Worker. Người quản trị cấu hình binding `AI` và `CHAT_RATE_LIMIT` trên Cloudflare. Quy trình chạy app không cần nhập API key.
+
+Nếu dùng Worker khác hoặc nhánh chưa có URL mặc định, truyền URL đầy đủ có `/chat`:
+
+```powershell
+flutter run "--dart-define=AI_TUTOR_CHAT_URL=https://edumaster-ai-tutor.edumaster-buingoc.workers.dev/chat"
+```
+
+### Cấu hình Android
+
+Android build có thể yêu cầu `android/app/google-services.json` vì cấu hình Gradle hiện còn áp dụng plugin `com.google.gms.google-services`. Tệp này không được theo dõi trong Git. Với nhánh còn Firebase, người quản trị cần cung cấp tệp đúng ứng dụng. Với nhánh đã bỏ Firebase runtime, xem cách gỡ khai báo plugin trong [hướng dẫn cài đặt](docs/05_HUONG_DAN_CAI_DAT_SU_DUNG.md).
+
+## 3. Chạy ứng dụng và build APK
+
+- **Emulator:** Android Studio → **Device Manager** → tạo hoặc mở thiết bị ảo Android. Chờ Android vào màn hình chính.
+- **Điện thoại thật:** Bật **Tùy chọn nhà phát triển → Gỡ lỗi USB**. Dùng cáp truyền dữ liệu, mở khóa điện thoại và xác nhận yêu cầu gỡ lỗi.
+
+```powershell
+flutter devices
 flutter run
+```
 
-# 6. (Tùy chọn) Đóng gói bản cài đặt APK Release
+Nếu có nhiều thiết bị, dùng `flutter run -d ID_THIET_BI` và thay ID bằng giá trị Flutter in ra. Khi app mở, đăng ký tài khoản demo GV hoặc SV. Thử AI bằng cách vào **AI Tutor → Trực tuyến** và hỏi “Flutter là gì?”. Chế độ này cần Internet và Worker đang hoạt động.
+
+```powershell
 flutter build apk --release
 ```
 
----
+APK mặc định nằm ở `build/app/outputs/flutter-apk/app-release.apk`. Nếu cần dùng Worker khác, thêm `--dart-define=AI_TUTOR_CHAT_URL=...` vào lệnh build. Thử chính APK đã build trên điện thoại thật trước khi chia sẻ.
 
-## 🧪 KẾT QUẢ KIỂM THỬ TỰ ĐỘNG (34/34 TESTS PASS)
+## 4. Chạy kiểm thử
 
-```text
-00:05 +34: All tests passed!
-- [Unit Tests 1 - 6]   Thuật toán SuperMemo SM-2 (State, Ease Factor, Interval, Boundary)
-- [Unit Tests 7 - 10]  Ngân hàng 300 câu hỏi song ngữ (JSON Parsing, Bilingual, Null Safety)
-- [Unit Tests 11 - 14] Phòng thi trực tuyến (Thang điểm 10, Chống gian lận thoát app)
-- [Unit Tests 15 - 17] Từ điển IT SQLite (FTS Queries, Bookmarks)
-- [Unit Tests 18 - 20] Phân quyền Auth & Role-based Access (Student / Teacher roles)
-- [Widget Test 21]    LoadingView (Tiến trình đang tải & Nút Hủy)
-- [Widget Test 22]    ErrorViewWithRetry (Lỗi & Lối ra Thử lại/Quay lại)
-- [Widget Test 23]    EmptyStateView (Trạng thái rỗng & Nút hành động)
-- [A11y Tests 24 - 26] androidTapTargetGuideline: Vùng chạm công thái học >= 48dp
-- [A11y Tests 27 - 29] labeledTapTargetGuideline: Đầy đủ nhãn ngữ nghĩa Screen Reader
-- [A11y Tests 30 - 32] textContrastGuideline: Độ tương phản văn bản đạt chuẩn WCAG AA
-- [A11y Tests 33 - 34] Song ngữ VI/EN & TouchTargetWrapper tự động ràng buộc kích thước
+```powershell
+flutter analyze
+flutter test --reporter expanded
+flutter test test/unit/teacher_group_membership_test.dart
+flutter test test/unit/ai_tutor_mode_test.dart test/widget/ai_chat_screen_test.dart
 ```
+
+Unit test và widget test có thể chạy khi chưa có thiết bị Android. Test AI dùng phản hồi mô phỏng. Để thử model thật, chạy cả `GET /health` và `POST /chat` theo [hướng dẫn Worker](ai-backend/README.md). [Kết quả và phạm vi kiểm thử](docs/03_BAO_CAO_KIEM_THU_CHAT_LUONG.md)
+
+## 5. Dữ liệu lưu ở đâu?
+
+| Dữ liệu | Nơi lưu |
+| --- | --- |
+| Tài khoản, phiên đăng nhập và vai trò | `SharedPreferences`. Tài khoản được ghi vào bảng `users` trong SQLite `edumaster_app.db`. |
+| Hồ sơ, EXP, nhóm, bảng xếp hạng và streak của SV | Bộ nhớ riêng của ứng dụng trên thiết bị, gồm `SharedPreferences` và các bảng SQLite tương ứng. |
+| Phòng thi, bài nộp, tiến độ và lịch sử thi | Kho dữ liệu cục bộ. PIN hoặc QR xác định phòng đã có trong dữ liệu của ứng dụng. |
+| Ngân hàng câu hỏi và dữ liệu từ điển gốc | `assets/data/questions_300.json` và `assets/data/it_dictionary.json`. |
+| Từ điển sau khi khởi tạo | SQLite `edumaster_it_dictionary.db`. |
+| Hội thoại AI | Lịch sử hiển thị giữ trong bộ nhớ khi app chạy. Chế độ trực tuyến gửi câu hỏi và ngữ cảnh hội thoại qua HTTPS đến Worker. |
+
+Tài khoản, nhóm và phòng thi lưu riêng trên từng thiết bị. Cùng source giúp mọi máy dùng cùng mã ứng dụng và URL AI Tutor. Khi demo thêm SV, đăng ký tài khoản SV trên cùng thiết bị mà GV sẽ dùng để quản lý nhóm. Mật khẩu tài khoản local chưa được băm, nên chỉ dùng thông tin dành riêng cho demo.
+
+## Tài liệu
+
+- [Cài đặt, chạy và dùng theo vai trò](docs/05_HUONG_DAN_CAI_DAT_SU_DUNG.md)
+- [Kiến trúc dự án](docs/01_BAO_CAO_TONG_QUAN_KIEN_TRUC.md)
+- [Đặc tả tính năng](docs/02_DAC_TA_TINH_NANG_THUAT_TOAN.md)
+- [Kiểm thử](docs/03_BAO_CAO_KIEM_THU_CHAT_LUONG.md)
+- [Bảo mật và lưu trữ](docs/04_CHINH_SACH_BAO_MAT_DU_LIEU.md)
+- [Triển khai AI Tutor](ai-backend/README.md)
+- [Báo cáo kết thúc học phần](docs/BAO_CAO_HOAN_CHINH_BTL_KTHP.md)

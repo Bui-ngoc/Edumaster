@@ -1,19 +1,17 @@
-# 🔒 CHÍNH SÁCH BẢO MẬT VÀ QUẢN TRỊ DỮ LIỆU (TIÊU CHÍ 6)
+# Bảo mật và lưu trữ dữ liệu
 
-## 1. MA TRẬN VỊ TRÍ LƯU TRỮ DỮ LIỆU
+| Dữ liệu | Nơi lưu và phạm vi |
+| --- | --- |
+| Tài khoản, vai trò, phiên đăng nhập | `SharedPreferences`. Thông tin tài khoản được ghi vào bảng `users` của SQLite `edumaster_app.db`. |
+| Hồ sơ, nhóm, EXP và streak | `SharedPreferences` và các bảng SQLite liên quan trên thiết bị. |
+| Phòng thi, kết quả, lịch sử và tiến độ | Kho dữ liệu cục bộ trên thiết bị. |
+| Từ điển và trắc nghiệm | Tệp JSON trong `assets/data/`. Từ điển được nhập vào `edumaster_it_dictionary.db`. |
+| Ảnh đại diện | Hồ sơ lưu đường dẫn ảnh trên thiết bị. |
 
-| Loại dữ liệu | Vị trí lưu trữ | Cơ chế bảo vệ |
-| :--- | :--- | :--- |
-| **Tài khoản & Phân quyền** | `SharedPreferences` (JSON) | Quản lý phiên làm việc cục bộ an toàn, tự động nhận diện vai trò GV/SV. |
-| **Ngân hàng 300 câu hỏi** | `assets/data/questions_300.json` | Đọc dạng asset bundle trong sandbox ứng dụng. |
-| **Từ điển IT (SQLite FTS)** | `edumaster_it_dictionary.db` | CSDL SQLite mã hóa trong vùng nhớ riêng ứng dụng. |
-| **Dữ liệu SM-2 & Lịch sử phòng thi** | `SharedPreferences` | Lưu trữ trong bộ nhớ nội bộ `/data/data/...`. |
-| **Ảnh đại diện Avatar** | Bộ nhớ cục bộ thiết bị (`localAvatarPath`) | Chỉ truy cập khi người dùng chụp ảnh/chọn ảnh qua Camera/ImagePicker. |
-| **Khóa AI & Proxy URL** | `SharedPreferences` | Không bao giờ hardcode trong code. Hỗ trợ Key Proxy Server và Demo Mode. |
+Android lưu SQLite và SharedPreferences trong vùng dữ liệu riêng của ứng dụng. Tài khoản demo cho phép chọn vai trò khi đăng ký và mật khẩu local chưa được băm. Dữ liệu tài khoản, nhóm và phòng thi không tự đồng bộ giữa thiết bị. Xóa dữ liệu ứng dụng hoặc gỡ APK có thể làm mất dữ liệu local.
 
----
+## AI và quyền Android
 
-## 2. QUYỀN HỆ THỐNG ĐÚNG LÚC (JUST-IN-TIME PERMISSIONS)
+Chế độ **Trực tuyến** gửi câu hỏi và ngữ cảnh qua HTTPS đến Cloudflare Worker. Chế độ **Ngoại tuyến** xử lý câu hỏi trên thiết bị. Flutter giữ lịch sử hội thoại trong bộ nhớ khi chạy. API `/chat` công khai và có giới hạn theo IP. Hạn mức Workers AI do tài khoản Cloudflare quản lý.
 
-* **Quyền Camera:** Chỉ yêu cầu khi người dùng chủ động mở tính năng Quét mã QR phòng thi hoặc Chụp ảnh đại diện Avatar.
-* **Quyền Bộ nhớ:** Dùng picker chuẩn hệ thống Android, không yêu cầu quyền ghi bộ nhớ ngoài nguy hiểm.
+App dùng Internet cho AI trực tuyến, camera khi quét QR hoặc chụp ảnh đại diện, và trình chọn ảnh để lấy ảnh. Giữ keystore, cấu hình ký và thông tin bí mật trong nơi lưu trữ được cấp quyền. Tài liệu và app dùng URL Worker công khai. [Hướng dẫn backend](../ai-backend/README.md)

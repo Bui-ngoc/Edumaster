@@ -1,36 +1,26 @@
-# 🧠 ĐẶC TẢ TÍNH NĂNG VÀ THUẬT TOÁN CỐT LÕI
+# Đặc tả tính năng và thuật toán
 
-## 1. THUẬT TOÁN SM-2 (SUPERMEMO SPACED REPETITION)
+## Trắc nghiệm và phòng thi
 
-Hệ thống ghi nhớ từ vựng và kiến thức Flashcards sử dụng thuật toán **SuperMemo SM-2** nâng cao:
+Ứng dụng đọc câu hỏi song ngữ từ `assets/data/questions_300.json`. Người học có thể luyện tập tự do, thi thử tính giờ và làm lại câu sai. Giáo viên chọn nguồn đề, thời lượng và mã PIN phòng thi. QR cung cấp mã phòng để ứng dụng tra cứu phòng trong kho cục bộ.
 
-* **Công thức cập nhật hệ số Ease Factor ($EF$):**
-  $$\Delta EF = 0.1 - (5 - q) \times (0.08 + (5 - q) \times 0.02)$$
-  $$EF' = \max(1.3, EF + \Delta EF)$$
-* **Lịch ôn tập ngắt quãng ($I$):**
-  - Nếu $q < 3$ (Học viên quên): Reset $n = 0, I = 1\text{ ngày}$.
-  - Nếu $q \ge 3$ (Học viên nhớ): $n' = n + 1$, $I(1) = 1, I(2) = 6, I(n) = \text{round}(I(n - 1) \times EF')$.
+Khi thí sinh rời ứng dụng trong lúc thi, luồng giám sát đọc các sự kiện vòng đời Flutter và ghi nhận vi phạm. Màn hình GV đọc tiến độ `LiveStudentSession` trong dữ liệu cục bộ. Sau khi nộp, ứng dụng chấm điểm và lưu kết quả.
 
----
+## Từ điển và kiến thức SM-2
 
-## 2. CƠ SỞ DỮ LIỆU SQLITE FULL-TEXT SEARCH (FTS)
+Từ điển dùng SQLite FTS để tìm kiếm toàn văn dữ liệu thuật ngữ trên thiết bị. SuperMemo SM-2 là thuật toán tham khảo mà AI Tutor ngoại tuyến có thể giải thích. Hệ số dễ nhớ được cập nhật theo công thức:
 
-* Từ điển IT Offline triển khai bảng ảo `CREATE VIRTUAL TABLE dictionary_fts USING fts4(...)`.
-* Cho phép tìm kiếm toàn văn tốc độ cao $O(\log N)$, phản hồi tức thì dưới $5\text{ms}$ ngay khi người dùng gõ từng ký tự.
+$$
+EF' = \max(1.3, EF + 0.1 - (5 - q)(0.08 + (5 - q)0.02))
+$$
 
----
+Bản Android hiện chưa có màn hình flashcard thực thi lịch ôn theo SM-2.
 
-## 3. CƠ CHẾ GIÁM SÁT CHỐNG GIAN LẬN VÀ THEO DÕI REALTIME
+## AI Tutor
 
-* Lắng nghe tín hiệu chu trình sống `AppLifecycleState.paused`/`inactive` thông qua `WidgetsBindingObserver`.
-* Tự động đếm số lần vi phạm và lưu chính xác mốc thời gian rời app (ví dụ: *10:14:02 — Rời màn hình thi*).
-* Dữ liệu sinh viên đang làm bài được đồng bộ định kỳ mỗi 3 giây sang `LiveStudentSession` phục vụ màn hình giám sát của Giáo viên.
+- **Trực tuyến:** Flutter gửi `POST /chat` qua HTTPS. Cloudflare Worker gọi Workers AI và trả JSON có trường `answer`.
+- **Ngoại tuyến:** `LocalAiEngine` trả lời câu hỏi được hỗ trợ, chẳng hạn kiến thức Dart, Flutter và tính điểm. Luồng giải thích đáp án sai có thể dùng lời giải có sẵn khi dịch vụ AI gặp lỗi.
 
----
+## Thêm sinh viên vào nhóm
 
-## 4. KIẾN TRÚC GIA SƯ AI TUTOR 4 TẦNG AN TOÀN
-
-1. **Demo Mode:** Trả lời bằng bộ dữ liệu mẫu song ngữ offline, không cần internet hay API key.
-2. **Key Proxy Server:** Định tuyến câu hỏi qua máy chủ trung gian giữ khóa Gemini, bảo mật tuyệt đối client.
-3. **Direct Key:** Cho phép nhập Gemini API key cá nhân lưu riêng trong `SharedPreferences`.
-4. **Offline Fallback:** Khi mất mạng hoặc quá thời gian chờ (10s), tự động trả lời bằng bộ quy tắc cục bộ thông minh.
+Luồng GV tra đúng mã ID trong bảng SQLite `users`, bỏ qua hoa thường và khoảng trắng ở hai đầu. ID chưa đăng ký báo `id ko tồn tại`. Sinh viên đã ở nhóm đích báo `id đã có trong nhóm`. Khi chuyển nhóm, bảng xếp hạng dùng ID tài khoản và giữ EXP của sinh viên.
