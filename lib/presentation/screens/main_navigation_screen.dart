@@ -29,6 +29,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final user = context.read<AuthProvider>().currentUser;
       final profProv = context.read<ProfileProvider>();
       await profProv.loadProfile(email: user?.email);
+      if (!mounted || user?.isTeacher != false) return;  // vừa thêm
       final isNewStreak = await profProv.checkDailyStreak(email: user?.email);
       if (isNewStreak && mounted) {
         final streak = profProv.profile.streakDays;
